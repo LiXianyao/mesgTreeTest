@@ -1,5 +1,6 @@
 #-*-coding:utf-8-*-#
 from Trie import TrieNode
+from sort import heap
 resultDict = {} #存储结果的字典结构
 
 def insertMsg(rootNode,Msg,no):
@@ -7,7 +8,9 @@ def insertMsg(rootNode,Msg,no):
     loc = 0
     lenMsg = len(Msg)
     now = rootNode
-    rootNode.matchWord(Msg,lenMsg,loc,no) #从根节点开始，以回溯法把句子Msg插入字典树,
+    deepth = 1
+    lenLowb = lenMsg/2
+    rootNode.matchWord(Msg,lenMsg,loc,no,deepth, lenLowb) #从根节点开始，以回溯法把句子Msg插入字典树,
 
 if __name__ == '__main__':
     #这里将输入数据读入（已分词？未分词？）
@@ -21,4 +24,11 @@ if __name__ == '__main__':
         insertMsg(rootNode,sentenses[i],i) #将句子依次插入字典树
 
     #遍历树看看情况
+    #rootNode.Trans("")
+    mindeep = 2
+    nowdeep = 1
+    k = lenSen / 2 + 1
+    sortHeap = heap(k)
     rootNode.Trans("")
+    rootNode.heapSort("",mindeep,sortHeap,nowdeep)
+    sortHeap.Trans()

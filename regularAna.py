@@ -57,7 +57,7 @@ c = 0
 while line:
     filename = lineRecord[c]
     fw = fwdir[filename]
-    fw.write(line + '\n')
+    fw.write(line)
     line = fr.readline()
     c += 1
 
