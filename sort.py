@@ -77,11 +77,11 @@ class heap:#小根堆
             if self.nodeList[i] == None:
                 continue
             node = self.nodeList[i]
-            print ("seq:'%s' has %d sentences are %s" %(node.wordSeq,node.value,node.triePtr))
+            print ("seq:'%s' has %d sentences" %(node.wordSeq,node.value))
             for ptr in node.triePtr:
                 vis[ptr] = True
-                out = str(sentenses[ptr]).replace('u\'', '\'')
+            #    out = str(sentenses[ptr]).replace('u\'', '\'')
 
-            print out.decode("unicode-escape")
+            #print out.decode("unicode-escape")
 
 

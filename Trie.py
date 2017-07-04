@@ -25,8 +25,8 @@ class TrieNode:
         #print "%s %s %d %d %d"%(self.keyword,Mesg,lenMesg,loc,no)
         if loc >= lenMesg or (deepth + (lenMesg - loc) < lenLowb): #递归到了句子结尾，结束
             return
-
-        while loc<lenMesg: #对每一层，它都试图和字符串当前位置之后的每个词为开头的子句做一次匹配
+        matchEnd = min(lenMesg,loc + 2)#建树的时候，最多枚举跳过2个词，（即认为经过关键词过滤后差距>3的两个短信已经不是一个模板）
+        while loc<matchEnd: #对每一层，它都试图和字符串当前位置之后的每个词为开头的子句做一次匹配
             if Mesg[loc] in self.children: #当前节点的后代中有可用匹配上的词
                 next = self.children.get(Mesg[loc]) #取出对应的字典树节点
                 next.addList(no)                    #添加匹配句子编号队列
@@ -46,9 +46,15 @@ class TrieNode:
         print ("%s %d %s")%(roadRecord,self.getListLen(),self.list)
 
     def heapSort(self,str,deepLBD,heap,nowDeep):
+        flag  = True
         for childkey in self.children:
             child = self.children[childkey]
-            newNode = heapNode(str+child.keyword+",",child.getListLen(),child.list)
-            if(nowDeep>=deepLBD) and (child.listlen>1) and (child.listlen >= self.listlen*0.3):
-                heap.addHeap(newNode)
-            child.heapSort(str+child.keyword+",",deepLBD,heap,nowDeep+1)
+            #print childkey, child.listlen
+            if(child.listlen>1) and (child.listlen >= self.listlen*0.1):
+                child.heapSort(str+child.keyword+",",deepLBD,heap,nowDeep+1)
+            if(child.listlen >= self.listlen*0.8):
+                flag = False
+
+        if (nowDeep>=deepLBD) and flag == True:
+            newNode = heapNode(str, self.getListLen(), self.list)
+            heap.addHeap(newNode)
