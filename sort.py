@@ -72,12 +72,16 @@ class heap:#小根堆
             else:#沉不下去，结束
                 break
 
-    def Trans(self):
+    def Trans(self,vis,sentenses):
         for i in range(1,self.MaxSize+1):
             if self.nodeList[i] == None:
                 continue
             node = self.nodeList[i]
             print ("seq:'%s' has %d sentences are %s" %(node.wordSeq,node.value,node.triePtr))
+            for ptr in node.triePtr:
+                vis[ptr] = True
+                out = str(sentenses[ptr]).replace('u\'', '\'')
 
+            print out.decode("unicode-escape")
 
 

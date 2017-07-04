@@ -16,7 +16,7 @@ def insertMsg(rootNode,Msg,no):
 if __name__ == '__main__':
     #这里将输入数据读入（已分词？未分词？）
     keywords = []  # 假设这里存关键词
-    sentenses = [['我','是','中国人'],['中国人','是','我'],['我','爱','二次元'],['我','是','北邮人'],['我','爱','北邮'],['我','爱','熬夜','写','代码']]  # 这里存短信句子
+    sentenses = [[u'我',u'是',u'中国人'],[u'中国人',u'是',u'我'],[u'我',u'爱',u'二次元'],[u'我',u'是',u'北邮人'],[u'我',u'爱',u'北邮'],[u'我',u'爱',u'熬夜',u'写',u'代码']]  # 这里存短信句子
     #省略对句子内容的过滤部分，即先认为此时的sentenses已经是只含有关键词的句子集合
 
     rootNode = TrieNode("")  #根节点
@@ -32,4 +32,12 @@ if __name__ == '__main__':
     sortHeap = heap(k)
     rootNode.Trans("")
     rootNode.heapSort("",mindeep,sortHeap,nowdeep)
-    sortHeap.Trans()
+
+    vis = [False]*lenSen
+    sortHeap.Trans(vis,sentenses)
+    print("====未归类=====")
+    for i in range(0,lenSen):
+        if vis[i] == False:
+            out = str(sentenses[i]).replace('u\'', '\'')
+            print out.decode("unicode-escape")
+
