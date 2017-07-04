@@ -10,6 +10,7 @@ def insertMsg(rootNode,Msg,no):
     now = rootNode
     deepth = 1
     lenLowb = lenMsg/2
+    rootNode.listlen +=1
     rootNode.matchWord(Msg,lenMsg,loc,no,deepth, lenLowb) #从根节点开始，以回溯法把句子Msg插入字典树,
 
 if __name__ == '__main__':

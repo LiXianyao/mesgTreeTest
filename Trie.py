@@ -5,6 +5,7 @@ class TrieNode:
     def __init__(self,keyword):
         self.keyword = keyword  #该节点对应的关键词
         self.list = []          #能与该节点匹配成功的句子编号列表
+        self.listlen = 0
         self.children = {}     #该节点的子节点列表,"子节点的词"：子节点对象
 
     def addChild(self,childNode):
@@ -18,10 +19,11 @@ class TrieNode:
         if no in self.list:
             return
         self.list.append(no)
+        self.listlen += 1
 
     def matchWord(self,Mesg,lenMesg,loc,no,deepth,lenLowb): #递归回溯法插入节点
         #print "%s %s %d %d %d"%(self.keyword,Mesg,lenMesg,loc,no)
-        if loc == lenMesg or (deepth + (lenMesg - loc) < lenLowb): #递归到了句子结尾，结束
+        if loc >= lenMesg or (deepth + (lenMesg - loc) < lenLowb): #递归到了句子结尾，结束
             return
 
         while loc<lenMesg: #对每一层，它都试图和字符串当前位置之后的每个词为开头的子句做一次匹配
@@ -47,6 +49,6 @@ class TrieNode:
         for childkey in self.children:
             child = self.children[childkey]
             newNode = heapNode(str+child.keyword+",",child.getListLen(),child.list)
-            if(nowDeep>=deepLBD):
+            if(nowDeep>=deepLBD) and (child.listlen>1) and (child.listlen >= self.listlen*0.3):
                 heap.addHeap(newNode)
             child.heapSort(str+child.keyword+",",deepLBD,heap,nowDeep+1)
