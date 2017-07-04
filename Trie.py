@@ -1,4 +1,5 @@
 #-*-coding:utf-8-*-#
+from sort import heapNode
 
 class TrieNode:
     def __init__(self,keyword):
@@ -18,21 +19,21 @@ class TrieNode:
             return
         self.list.append(no)
 
-    def matchWord(self,Mesg,lenMesg,loc,no): #递归回溯法插入节点
+    def matchWord(self,Mesg,lenMesg,loc,no,deepth,lenLowb): #递归回溯法插入节点
         #print "%s %s %d %d %d"%(self.keyword,Mesg,lenMesg,loc,no)
-        if loc == lenMesg: #递归到了句子结尾，结束
+        if loc == lenMesg or (deepth + (lenMesg - loc) < lenLowb): #递归到了句子结尾，结束
             return
 
         while loc<lenMesg: #对每一层，它都试图和字符串当前位置之后的每个词为开头的子句做一次匹配
             if Mesg[loc] in self.children: #当前节点的后代中有可用匹配上的词
                 next = self.children.get(Mesg[loc]) #取出对应的字典树节点
                 next.addList(no)                    #添加匹配句子编号队列
-                next.matchWord(Mesg,lenMesg,loc+1,no)  #对这个对象递归处理
+                next.matchWord(Mesg,lenMesg,loc+1,no,deepth + 1,lenLowb)  #对这个对象递归处理
             else:#当前节点的后代中没有以 Mesg[loc]开头的子句
                 newNode = TrieNode(Mesg[loc])
                 self.addChild(newNode)  #新点是当前点的一个新后代
                 newNode.addList(no)     #新句子当然包含了本身
-                newNode.matchWord(Mesg,lenMesg,loc+1,no) #对新点递归处理
+                newNode.matchWord(Mesg,lenMesg,loc+1,no, deepth + 1,lenLowb) #对新点递归处理
             #当前点匹配下一个位置
             loc += 1
 
@@ -40,5 +41,12 @@ class TrieNode:
         for childkey in self.children:
             child = self.children[childkey]
             child.Trans(roadRecord+child.keyword+",")
-
         print ("%s %d %s")%(roadRecord,self.getListLen(),self.list)
+
+    def heapSort(self,str,deepLBD,heap,nowDeep):
+        for childkey in self.children:
+            child = self.children[childkey]
+            newNode = heapNode(str+child.keyword+",",child.getListLen(),child.list)
+            if(nowDeep>=deepLBD):
+                heap.addHeap(newNode)
+            child.heapSort(str+child.keyword+",",deepLBD,heap,nowDeep+1)
