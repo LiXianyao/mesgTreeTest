@@ -1,0 +1,49 @@
+纯redis操作:
+【redis数据结构 – 简介】
+nosql, 形式接近于python的diction
+redis是一种高级的key:value存储系统，其中value支持五种数据类型：
+
+1.字符串（strings）
+2.字符串列表（lists）
+3.字符串集合（sets）
+4.有序字符串集合（sorted sets）
+5.哈希（hashes）
+
+而关于key，有几个点要提醒大家：
+
+1.key不要太长，尽量不要超过1024字节，这不仅消耗内存，而且会降低查找的效率；
+2.key也不要太短，太短的话，key的可读性会降低；
+3.在一个项目中，key最好使用统一的命名模式，例如user:10000:passwd。
+
+【redis数据结构 – strings】
+字符串类型可以进行数值操作，在遇到数值操作时，redis会将字符串类型转换成数值：
+  127.0.0.1:6379> set mynum "2"
+  OK
+  127.0.0.1:6379> get mynum
+  "2"
+  127.0.0.1:6379> incr mynum
+  (integer) 3
+  127.0.0.1:6379> get mynum
+  "3"
+INCR等指令本身就具有原子操作的特性，可以利用redis的INCR、INCRBY、DECR、DECRBY等指令来实现“原子计数”的效果：
+假如，在某种场景下有3个客户端同时读取了mynum的值（值为2），然后对其同时进行了加1的操作，那么，最后mynum的值一定是5。用redis的这个特性实现业务上的统计计数需求。
+
+
+
+
+
+
+===============================================================================================================================
+python&&redis
+
+import redis
+
+ r = redis.StrictRedis(host='192.168.1.103', port=6379, db='0')#建立连接
+
+ result = r.set('name', 'shouke')  # 存储键-值
+
+ print('result of set: %s' % result) #返回值为true or false
+ 
+ keys = r.keys()  # 获取所有键
+
+print('keys: %s' % keys) 
