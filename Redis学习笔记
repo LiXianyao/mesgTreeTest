@@ -31,13 +31,13 @@ INCR等指令本身就具有原子操作的特性，可以利用redis的INCR、I
 【redis数据结构 – lists】
 
 redis的另一个重要的数据结构叫做lists，翻译成中文叫做“列表”。
-//在mylist左侧插入元素"0"
-127.0.0.1:6379> lpush mylist "0"  #返回值是list长度
-(integer) 3
-//列出mylist中从编号0到编号1的元素
-127.0.0.1:6379> lrange mylist 0 1
-1) "0"
-2) "1"
+  //在mylist左侧插入元素"0"
+  127.0.0.1:6379> lpush mylist "0"  #返回值是list长度
+  (integer) 3
+  //列出mylist中从编号0到编号1的元素
+  127.0.0.1:6379> lrange mylist 0 1
+  1) "0"
+  2) "1"
 redis中的lists在底层实现上并不是数组，而是链表，也就是说对于一个具有上百万个元素的lists来说，在头部和尾部插入一个新元素，其时间复杂度是常数级别的，
 比如用LPUSH在10个元素的lists头部插入新元素，和在上千万元素的lists头部插入新元素的速度应该是相同的。
 虽然lists有这样的优势，但同样有其弊端，那就是，链表型lists的元素定位会比较慢，而数组型lists的元素定位就会快得多。
@@ -55,35 +55,191 @@ redis的集合，是一种无序的集合，集合中的元素没有先后顺序
 集合相关的操作也很丰富，如添加新元素、删除已有元素、取交集、取并集、取差集等。我们来看例子：
 复制代码 代码如下:
 
-//向集合myset中加入一个新元素"one"
-127.0.0.1:6379> sadd myset "one"  #返回值是这句sadd操作插入成功的元素数
-(integer) 1
-//列出集合myset中的所有元素
-127.0.0.1:6379> smembers myset
-1) "one"
-2) "two"
-//判断元素1是否在集合myset中，返回1表示存在，返回0表示不存在
-127.0.0.1:6379> sismember myset "one"
-(integer) 1
-//新建一个新的集合yourset
-127.0.0.1:6379> sadd yourset "1"
-(integer) 1
-127.0.0.1:6379> sadd yourset "2"
-(integer) 1
-127.0.0.1:6379> smembers yourset
-1) "1"
-2) "2"
-//对两个集合求并集
-127.0.0.1:6379> sunion myset yourset
-1) "1"
-2) "one"
-3) "2"
-4) "two"
+    //向集合myset中加入一个新元素"one"
+    127.0.0.1:6379> sadd myset "one"  #返回值是这句sadd操作插入成功的元素数
+    (integer) 1
+    //列出集合myset中的所有元素
+    127.0.0.1:6379> smembers myset
+    1) "one"
+    2) "two"
+    //判断元素1是否在集合myset中，返回1表示存在，返回0表示不存在
+    127.0.0.1:6379> sismember myset "one"
+    (integer) 1
+    //新建一个新的集合yourset
+    127.0.0.1:6379> sadd yourset "1"
+    (integer) 1
+    127.0.0.1:6379> sadd yourset "2"
+    (integer) 1
+    127.0.0.1:6379> smembers yourset
+    1) "1"
+    2) "2"
+    //对两个集合求并集
+    127.0.0.1:6379> sunion myset yourset
+    1) "1"
+    2) "one"
+    3) "2"
+    4) "two"
 
- 
+【redis数据结构 – 有序集合】
 
-对于集合的使用，也有一些常见的方式，比如，QQ有一个社交功能叫做“好友标签”，大家可以给你的好友贴标签，比如“大美女”、“土豪”、“欧巴”等等，
-这时就可以使用redis的集合来实现，把每一个用户的标签都存储在一个集合之中。
+redis不但提供了无需集合（sets），还很体贴的提供了有序集合（sorted sets）。有序集合中的每个元素都关联一个序号（score），这便是排序的依据。
+
+很多时候，我们都将redis中的有序集合叫做zsets，这是因为在redis中，有序集合相关的操作指令都是以z开头的，比如zrange、zadd、zrevrange、zrangebyscore等等
+
+    127.0.0.1:6379> zadd myzset 1 baidu.com #  zadd  <setname> <score> <value>
+    (integer) 1
+    //向myzset中新增一个元素360.com，赋予它的序号是3
+    127.0.0.1:6379> zadd myzset 3 360.com
+    (integer) 1
+    //向myzset中新增一个元素google.com，赋予它的序号是2
+    127.0.0.1:6379> zadd myzset 2 google.com
+    (integer) 1
+    //列出myzset的所有元素，同时列出其序号，可以看出myzset已经是有序的了。
+    127.0.0.1:6379> zrange myzset 0 -1 with scores  #可见序号和内容在数据库里是分开、连续存储的
+    1) "baidu.com"
+    2) "1"
+    3) "google.com"
+    4) "2"
+    5) "360.com"
+    6) "3"
+    //只列出myzset的元素
+    127.0.0.1:6379> zrange myzset 0 -1
+    1) "baidu.com"
+    2) "google.com"
+    3) "360.com"
+【redis数据结构 – 哈希】
+
+最后要给大家介绍的是hashes，即哈希。哈希是从redis-2.0.0版本之后才有的数据结构。
+
+hashes存的是字符串和字符串值之间的映射，比如一个用户要存储其全名、姓氏、年龄等等，就很适合使用哈希。
+      //建立哈希，并赋值
+      127.0.0.1:6379> HMSET user:001 username antirez password P1pp0 age 34
+      OK
+      //列出哈希的内容
+      127.0.0.1:6379> HGETALL user:001
+      1) "username"
+      2) "antirez"
+      3) "password"
+      4) "P1pp0"
+      5) "age"
+      6) "34"
+      //更改哈希中的某一个值
+      127.0.0.1:6379> HSET user:001 password 12345
+      (integer) 0
+      //再次列出哈希的内容
+      127.0.0.1:6379> HGETALL user:001
+      1) "username"
+      2) "antirez"
+      3) "password"
+      4) "12345"
+      5) "age"
+      6) "34"
+      
+【redis持久化 – 两种方式】
+redis提供了两种持久化的方式，分别是RDB（Redis DataBase）和AOF（Append Only File）。
+RDB，简而言之，就是在不同的  时间点  ，将redis存储的数据生成快照并存储到磁盘等介质上；
+      redis在进行数据持久化的过程中，会先将数据写入到一个临时文件中，待持久化过程都结束了，才会用这个临时文件  替换 上次持久化好的文件。
+      
+AOF，则是换了一个角度来实现持久化，那就是将redis执行过的所有写指令记录下来，在下次redis重新启动时，只要把这些写指令从前到后再重复执行一遍，就可以实现数据恢复了。
+  `英文是Append Only File，即只允许追加 不 允许改写的文件。
+  `通过配置redis.conf中的appendonly yes就可以打开AOF功能。如果有写操作（如SET等），redis就会被追加到AOF文件的末尾。
+  `默认的AOF持久化策略是 每秒钟 fsync一次（fsync是指把缓存中的写指令记录到磁盘中），因为在这种情况下，redis仍然可以保持很好的处理性能，
+  即使redis故障，也只会丢失最近1秒钟的数据。
+  `如果在追加日志时，恰好遇到磁盘空间满、inode满或断电等情况导致日志写入不完整，也没有关系，redis提供了redis-check-aof工具，可以用来进行日志修复。
+  `redis提供了AOF文件重写（rewrite）机制，即当AOF文件的大小超过所设定的阈值时，redis就会启动AOF文件的内容压缩，只保留可以恢复数据的 最小 指令集。
+  假如我们调用了100次INCR指令，在AOF文件中就要存储100条指令，但这明显是很低效的，完全可以把这100条指令合并成一条SET指令，这就是重写机制的原理。
+  ！！在操作redis时，不小心执行了FLUSHALL，导致redis内存中的数据全部被清空了，这是很悲剧的事情。不过这也不是世界末日，只要redis配置了AOF持久化方式，且AOF文件
+  还没有被重写（rewrite），我们就可以用最快的速度暂停redis并编辑AOF文件，将最后一行的FLUSHALL命令删除，然后重启redis，就可以恢复redis的所有数据到FLUSHALL之前的状态了。
+  
+  `如果你直接执行BGREWRITEAOF命令，那么redis会生成一个全新的AOF文件，其中便包括了可以恢复现有数据的最少的命令集。
+
+   `如果运气比较差，AOF文件出现了被写坏的情况，也不必过分担忧，redis并不会贸然加载这个有问题的AOF文件，而是报错退出。这时可以通过以下步骤来修复出错的文件：
+        1.备份被写坏的AOF文件
+        2.运行redis-check-aof –fix进行修复
+        3.用diff -u来看下两个文件的差异，确认问题点
+        4.重启redis，加载修复后的AOF文件
+  
+其实RDB和AOF两种方式也可以同时使用，在这种情况下，如果redis重启的话，则会优先采用AOF方式来进行数据恢复，这是因为AOF方式的数据恢复完整度更高。
+如果你没有数据持久化的需求，也完全可以关闭RDB和AOF方式，这样的话，redis将变成一个纯内存数据库，就像memcache一样。（断电即丢）
+
+【聊聊redis的事务处理】
+
+众所周知，事务是指“一个完整的动作，要么全部执行，要么什么也没有做”。
+在聊redis事务处理之前，要先和大家介绍四个redis指令，即MULTI、EXEC、DISCARD、WATCH。这四个指令构成了redis事务处理的基础。
+    1.MULTI用来组装一个事务；
+    2.EXEC用来执行一个事务；
+    3.DISCARD用来取消一个事务；
+    4.WATCH用来  监视  一些key，一旦这些key在事务执行之前被改变，则  取消  事务的执行。
+          redis> MULTI //标记事务开始
+          OK
+          redis> INCR user_id //多条命令按顺序入队
+          QUEUED
+          redis> INCR user_id
+          QUEUED
+          redis> INCR user_id
+          QUEUED
+          redis> PING
+          QUEUED
+          redis> EXEC //执行
+          1) (integer) 1
+          2) (integer) 2
+          3) (integer) 3
+          4) PONG
+    在上面的例子中，我们看到了QUEUED的字样，这表示我们在用MULTI组装事务时，每一个命令都会进入到内存队列中缓存起来，如果出现QUEUED则表示我们这个命令成功
+插入了缓存队列，在将来执行EXEC时，这些被QUEUED的命令都会被组装成一个事务来执行。
+    对于事务的执行来说，如果redis开启了AOF持久化的话，那么一旦事务被成功执行，事务中的命令就会通过write命令一次性写到磁盘中去，如果在向磁盘中写的过程
+中恰好出现断电、硬件故障等问题，那么就可能出现只有部分命令进行了AOF持久化，这时AOF文件就会出现不完整的情况，这时，我们可以使用redis-check-aof工具来修复这一问题，这个工具会将AOF文件中不完整的信息移除，确保AOF文件完整可用。
+
+有关事务，大家经常会遇到的是两类错误：
+  1.调用EXEC之前的错误  #语法错误/内存错误
+  2.调用EXEC之后的错误   #逻辑错误
+“调用EXEC之前的错误”，有可能是由于语法有误导致的，也可能时由于内存不足导致的。只要出现某个命令无法成功写入缓冲队列的情况，redis都会进行记录，在客户端
+调用EXEC时，redis会  拒绝执行   这一事务。（这时2.6.5版本之后的策略。在2.6.5之前的版本中，redis会忽略那些入队失败的命令，只执行那些入队成功的命令）。
+        127.0.0.1:6379> multi
+        OK
+        127.0.0.1:6379> haha //一个明显错误的指令
+        (error) ERR unknown command 'haha'
+        127.0.0.1:6379> ping
+        QUEUED
+        127.0.0.1:6379> exec
+        //redis无情的拒绝了事务的执行，原因是“之前出现了错误”
+        (error) EXECABORT Transaction discarded because of previous errors.
+  而对于“调用EXEC之后的错误”，redis则采取了完全不同的策略，即redis  不会理睬   这些错误，而是继续向下执行事务中的其他命令。这是因为，对于应用层面的错误，
+并不是redis自身需要考虑和处理的问题，所以一个事务中如果某一条命令执行失败，并不会影响接下来的其他命令的执行。我们也来看一个例子：
+          127.0.0.1:6379> multi
+          OK
+          127.0.0.1:6379> set age 23
+          QUEUED
+          //age不是集合，所以如下是一条明显错误的指令
+          127.0.0.1:6379> sadd age 15
+          QUEUED
+          127.0.0.1:6379> set age 29
+          QUEUED
+          127.0.0.1:6379> exec //执行事务时，redis不会理睬第2条指令执行错误
+          1) OK
+          2) (error) WRONGTYPE Operation against a key holding the wrong kind of value
+          3) OK
+          127.0.0.1:6379> get age
+          "29" //可以看出第3条指令被成功执行了
+好了，我们来说说最后一个指令“WATCH”，这是一个很好用的指令，它可以帮我们实现类似于“乐观锁”的效果，即CAS（check and set）。
+
+WATCH本身的作用是“监视key是否被改动过”，而且支持同时监视多个key，只要 还没 真正触发事务，WATCH都会尽职尽责的监视，一旦发现某个key被修改了，在执行EXEC
+时就会返回nil，表示事务无法触发。
+          127.0.0.1:6379> set age 23
+          OK
+          127.0.0.1:6379> watch age //开始监视age
+          OK
+          127.0.0.1:6379> set age 24 //在EXEC之前，age的值被修改了
+          OK
+          127.0.0.1:6379> multi
+          OK
+          127.0.0.1:6379> set age 25
+          QUEUED
+          127.0.0.1:6379> get age
+          QUEUED
+          127.0.0.1:6379> exec //触发EXEC
+          (nil) //事务无法被执行
+
 
 
 ===============================================================================================================================
