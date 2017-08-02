@@ -1,0 +1,103 @@
+Numpy 和 Pandas 有什么不同?
+Numpy 是列表形式的，没有数值标签，而 Pandas 就是字典形式。
+
+两个数据结构：Series和DataFrame。
+
+Series的 创建：
+  import pandas as pd
+  import numpy as np
+  s = pd.Series([1,3,6,np.nan,44,1])
+  print(s)
+  """ 自然变成了字典，索引在左边，值在右边。由于我们没有为数据指定索引。于是会自动创建一p个0到N-1（N为长度）的整数型索引
+  0     1.0
+  1     3.0
+  2     6.0
+  3     NaN
+  4    44.0
+  5     1.0
+  dtype: float64
+  """
+  
+DataFrame 的创建：
+  dates = pd.date_range('20160101',periods=6)#从起始日期开始往后共6天，不能日期违规
+  df = pd.DataFrame(np.random.randn(6,4),index=dates,columns=['a','b','c','d'])#行索引是dates,列是a\b\c\d,数值是6行4列（标准正态分布）随机数
+  print(df)
+  """
+                     a         b         c         d
+  2016-01-01 -0.253065 -2.071051 -0.640515  0.613663
+  2016-01-02 -1.147178  1.532470  0.989255 -0.499761
+  2016-01-03  1.221656 -2.390171  1.862914  0.778070
+  2016-01-04  1.473877 -0.046419  0.610046  0.204672
+  2016-01-05 -1.584752 -0.700592  1.487264 -1.778293
+  2016-01-06  0.633675 -1.414157 -0.277066 -0.442545
+  """
+
+DataFrame是一个表格型的数据结构，它包含有一组有序的列，每列可以是不同的值类型（数值，字符串，布尔值等）。DataFrame既有行索引也有列索引， 它可以被看做由Series组成的大字典。
+
+我们可以根据每一个不同的索引来挑选数据, 比如挑选 b 的元素: 
+print(df['b'])
+
+"""
+2016-01-01   -2.071051
+2016-01-02    1.532470
+2016-01-03   -2.390171
+2016-01-04   -0.046419
+2016-01-05   -0.700592
+2016-01-06   -1.414157
+Freq: D, Name: b, dtype: float64
+"""
+
+  `没有规定索引时，也是自动从0开始
+ 
+ 若果提供的列有长有短，会自动填充
+ df2 = pd.DataFrame({'A' : 1.,
+                    'B' : pd.Timestamp('20130102'),
+                    'C' : pd.Series(1,index=list(range(4)),dtype='float32'),
+                    'D' : np.array([3] * 4,dtype='int32'),
+                    'E' : pd.Categorical(["test","train","test","train"]),
+                    'F' : 'foo'})
+                    
+print(df2)
+
+"""
+     A          B    C  D      E    F
+0  1.0 2013-01-02  1.0  3   test  foo
+1  1.0 2013-01-02  1.0  3  train  foo
+2  1.0 2013-01-02  1.0  3   test  foo
+3  1.0 2013-01-02  1.0  3  train  foo
+"""
+
+这种方法能对每一列的数据进行特殊对待. 
+
+想知道数据的总结, 可以用 describe():
+
+df2.describe()
+
+"""
+         A    C    D
+count  4.0  4.0  4.0
+mean   1.0  1.0  3.0
+std    0.0  0.0  0.0
+min    1.0  1.0  3.0
+25%    1.0  1.0  3.0
+50%    1.0  1.0  3.0
+75%    1.0  1.0  3.0
+max    1.0  1.0  3.0
+"""
+主要是可以接受dict，获得的dict的key会自动变成colum的key，如果有key不同的dict，key都会被保留，没有value的地方是NaN
+>>> vec
+[{'text': 'lixian', 'num_words': 255, 'label': 1}, {'text': 'yaoyao', 'num_words': 3, 'label': 2}, {'???': 'you'}]
+>>> pd.DataFrame(vec)
+   ???  label  num_words    text
+0  NaN    1.0      255.0  lixian
+1  NaN    2.0        3.0  yaoyao
+2  you    NaN        NaN     NaN
+`其他：
+翻转数据, transpose:  df2.T
+对数据的 index 进行排序并输出 print(df2.sort_index(axis=1, ascending=False))
+对数据 值 排序输出: print(df2.sort_values(by='B'))
+
+
+
+ 
+
